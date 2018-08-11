@@ -16,6 +16,7 @@ function getScheduleDevices(data) {
   const ratesArray = getRateArray(rates, timeShift);
   const ratesAmount = getRatesAmount(ratesArray);
   let notSetDevices = filterDevices(devices, state);
+  const hashOptimalCosts = findOptimalTime(notSetDevices, ratesAmount);
 }
 
 /*
@@ -61,10 +62,11 @@ function getRatesAmount(rates) {
 
   rates.forEach((rate, index) => {
     if (index === 0) {
-      amount[0] = rate;
+      amount[0] = 0;
+      amount[1] = rate;
     } else {
-      amount[index] = amount[index - 1] + rate;
-      amount[index] = Number(amount[index].toFixed(2));
+      amount[index + 1] = amount[index] + rate;
+      amount[index + 1] = Number(amount[index + 1].toFixed(4));
     }
   });
 
@@ -128,6 +130,35 @@ function filterDevices(devices, state) {
   });
 }
 
+function findOptimalTime(devices, ratesAmount) {
+  const hashCosts = [];
+  devices.forEach(device => {
+    let duration = device.duration;
+    if (duration > 12) {
+      duration = 24 - 12;
+    }
+
+    if (hashCosts[duration] == null) {
+      let countIterations = ratesAmount.length - duration - 2;
+      const timeArray = [];
+
+      for (let i = 0; i <= ratesAmount.length - duration - 2; i++) {
+        let cost = ratesAmount[i + duration] - ratesAmount[i];
+        cost = Number(cost.toFixed(4));
+        timeArray.push({
+          from: i,
+          to: i + duration,
+          cost,
+        });
+      }
+
+      hashCosts[duration] = timeArray.sort((a, b) => a - b);
+    }
+  });
+
+  return hashCosts;
+}
+
 module.exports = {
   getRateArray,
   getRatesAmount,
@@ -135,4 +166,5 @@ module.exports = {
   filterDevices,
   setInSchedule,
   createResultObject,
+  findOptimalTime,
 };

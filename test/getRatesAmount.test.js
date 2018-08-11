@@ -9,6 +9,7 @@ describe('getRatesAmount', () => {
 
   test('correct Value', () => {
     const expected = [
+      0,
       6.46,
       12.92,
       19.38,

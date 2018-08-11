@@ -4,7 +4,8 @@
   "description": "3d task for Yandex SHRI 2018",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "dev": "jest --watchAll"
   },
   "repository": {
     "type": "git",
