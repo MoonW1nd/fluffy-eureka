@@ -16,7 +16,13 @@ function getScheduleDevices(data) {
   const ratesArray = getRateArray(rates, timeShift);
   const ratesAmount = getRatesAmount(ratesArray);
   let notSetDevices = filterDevices(devices, state);
-  const hashOptimalCosts = findOptimalTime(notSetDevices, ratesAmount);
+  const hashOptimalCosts = getOptimalTimeHash(notSetDevices, ratesAmount);
+
+  /*
+    сортируем по мощности так как приборы с большой потребляемой мощностью следует
+    установить в самые выгодные позиции
+  */
+  notSetDevices.sort((a, b) => b.power - a.power);
 }
 
 /*
@@ -85,13 +91,17 @@ function getCorrectTime(timeShift) {
 
 function setInSchedule(option) {
   const { device, time, state } = option;
-  for (let hour = time.from; hour <= time.to; hour++) {
+  for (let hour = time.from; hour < time.to; hour++) {
     const index = state.getTime(hour);
     state.resultObject.schedule[index].push(device.id);
     state.allowPower[index] -= device.power;
   }
 }
 
+/*
+	Раскидаем устройства которые работают круглосуточно или 12 часов
+  с одним из режимов
+*/
 function filterDevices(devices, state) {
   return devices.filter(device => {
     const isInfinityWork = device.duration === 24;
@@ -100,7 +110,7 @@ function filterDevices(devices, state) {
     if (isInfinityWork) {
       setInSchedule({
         device,
-        time: { from: 0, to: 23 },
+        time: { from: 0, to: 24 },
         state,
       });
 
@@ -108,7 +118,7 @@ function filterDevices(devices, state) {
     } else if (isFullDayWork) {
       setInSchedule({
         device,
-        time: { from: 0, to: 13 },
+        time: { from: 0, to: 14 },
         state,
       });
 
@@ -116,7 +126,7 @@ function filterDevices(devices, state) {
     } else if (isFullNightWork) {
       setInSchedule({
         device,
-        time: { from: 14, to: 23 },
+        time: { from: 14, to: 24 },
         state,
       });
       /* 	      } else {
@@ -130,7 +140,7 @@ function filterDevices(devices, state) {
   });
 }
 
-function findOptimalTime(devices, ratesAmount) {
+function getOptimalTimeHash(devices, ratesAmount) {
   const hashCosts = [];
   devices.forEach(device => {
     let duration = device.duration;
@@ -139,10 +149,10 @@ function findOptimalTime(devices, ratesAmount) {
     }
 
     if (hashCosts[duration] == null) {
-      let countIterations = ratesAmount.length - duration - 2;
+      let countIterations = ratesAmount.length - duration - 1;
       const timeArray = [];
 
-      for (let i = 0; i <= ratesAmount.length - duration - 2; i++) {
+      for (let i = 0; i <= countIterations; i++) {
         let cost = ratesAmount[i + duration] - ratesAmount[i];
         cost = Number(cost.toFixed(4));
         timeArray.push({
@@ -152,11 +162,53 @@ function findOptimalTime(devices, ratesAmount) {
         });
       }
 
-      hashCosts[duration] = timeArray.sort((a, b) => a - b);
+      hashCosts[duration] = timeArray;
     }
   });
 
   return hashCosts;
+}
+
+function setDevices(devices, hashOptimalCosts, state) {
+  devices.forEach(device => {
+    let optimalPositions = hashOptimalCosts[device.duration];
+
+    if (device.mode == 'day') {
+      optimalPositions = optimalPositions.slice(0, 15 - device.duration);
+    } else if (device.mode == 'night') {
+      optimalPositions = optimalPositions.slice(14);
+    }
+
+    optimalPositions.sort((a, b) => {
+      if (a.cost === b.cost) {
+        return a.from - b.from;
+      } else {
+        return a.cost - b.cost;
+      }
+    });
+
+    for (let i = 0; i < optimalPositions.length; i++) {
+      const position = optimalPositions[i];
+
+      // добавить чтение мода на приборов
+      let isAllow = true;
+
+      for (let time = position.from; time < position.to; time++) {
+        if (state.allowPower[state.getTime(time)] < device.power) {
+          isAllow = false;
+        }
+      }
+      if (isAllow) {
+        setInSchedule({
+          device,
+          time: { from: position.from, to: position.to },
+          state,
+        });
+
+        break;
+      }
+    }
+  });
 }
 
 module.exports = {
@@ -166,5 +218,6 @@ module.exports = {
   filterDevices,
   setInSchedule,
   createResultObject,
-  findOptimalTime,
+  getOptimalTimeHash,
+  setDevices,
 };

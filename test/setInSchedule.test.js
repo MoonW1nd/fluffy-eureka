@@ -6,6 +6,7 @@ describe('getCorrectTime', () => {
     resultObject: createResultObject(),
     allowPower: Array(24).fill(2100),
   };
+
   test('correct Value', () => {
     const expectedSchedule = {
       '0': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
@@ -30,7 +31,11 @@ describe('getCorrectTime', () => {
       '19': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '20': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '21': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
-      '22': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
+      '22': [
+        '02DDD23A85DADDD71198305330CC386D',
+        '1E6276CC231716FE8EE8BC908486D41E',
+        '7D9DC84AD110500D284B33C82FE6E85E',
+      ],
       '23': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
     };
 
@@ -41,7 +46,7 @@ describe('getCorrectTime', () => {
         power: 50,
         duration: 24,
       },
-      time: { from: 0, to: 23 },
+      time: { from: 0, to: 24 },
       state,
     });
 
@@ -52,7 +57,18 @@ describe('getCorrectTime', () => {
         power: 50,
         duration: 24,
       },
-      time: { from: 0, to: 23 },
+      time: { from: 0, to: 24 },
+      state,
+    });
+
+    setInSchedule({
+      device: {
+        id: '7D9DC84AD110500D284B33C82FE6E85E',
+        name: 'Кондиционер',
+        power: 850,
+        duration: 1,
+      },
+      time: { from: 15, to: 16 },
       state,
     });
 
