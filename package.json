@@ -1,0 +1,36 @@
+{
+  "name": "fluffy-eureka",
+  "version": "0.0.1",
+  "description": "3d task for Yandex SHRI 2018",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoonW1nd/fluffy-eureka.git"
+  },
+  "author": "Alexander Ivankov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MoonW1nd/fluffy-eureka/issues"
+  },
+  "homepage": "https://github.com/MoonW1nd/fluffy-eureka#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,scss,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^1.0.0-rc.13",
+    "jest": "^23.5.0",
+    "lint-staged": "^7.2.0",
+    "prettier": "1.13.7"
+  }
+}
