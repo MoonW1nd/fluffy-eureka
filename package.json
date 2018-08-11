@@ -22,10 +22,12 @@
     }
   },
   "lint-staged": {
-    "*.{js,json,scss,md}": [
-      "prettier --write",
-      "git add"
-    ]
+    "linters": {
+      "*.{js,json,scss,md}": [
+        "prettier --write",
+        "git add"
+      ]
+    }
   },
   "devDependencies": {
     "husky": "^1.0.0-rc.13",

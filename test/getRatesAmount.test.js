@@ -2,7 +2,7 @@ const { getRatesAmount, getRateArray } = require('../index');
 const data = require('./data/input');
 const ratesArray = getRateArray(data.rates, 7);
 
-describe('getRateArray', () => {
+describe('getRatesAmount', () => {
   test('output is Array', () => {
     expect(Array.isArray(getRatesAmount(ratesArray))).toBe(true);
   });
