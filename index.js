@@ -47,19 +47,28 @@ function createResultObject() {
  */
 function getRateArray(rateRanges, timeShift) {
   const rates = [];
+  let sum = 0;
   rateRanges.forEach(range => {
     if (range.from > range.to) {
+      sum += 24 - range.from;
+      sum += range.to;
       let shift = 24 - (24 - range.from + range.to);
 
       for (let i = shift; i <= 23; i++) {
         rates[i] = range.value;
       }
-    }
+    } else {
+      sum += range.to - range.from;
 
-    for (let i = range.from; i < range.to; i++) {
-      rates[i - timeShift] = range.value;
+      for (let i = range.from; i < range.to; i++) {
+        rates[i - timeShift] = range.value;
+      }
     }
   });
+
+  if (rates.length !== 24 || sum !== 24) {
+    throw Error('Не корректно задана сетка тарифов');
+  }
 
   return rates;
 }
@@ -118,7 +127,20 @@ function filterDevices(devices, state) {
     const isInfinityWork = device.duration === 24;
     const isFullDayWork = device.mode === 'day' && device.duration === 14;
     const isFullNightWork = device.mode === 'night' && device.duration === 10;
+
+    if (device.mode != null && !['day', 'night'].includes(device.mode)) {
+      throw Error(`В устройстве с id: ${device.id} не корректно задан мод`);
+    }
+
     if (isInfinityWork) {
+      if (!checkAllowSetForPower(0, 24, device.power, state.allowPower)) {
+        throw Error(
+          `Устройстве с id: ${
+            device.id
+          } не возможно включить в расписание так как не хватает допустимой мощности`
+        );
+      }
+
       setInSchedule({
         device,
         time: { from: 0, to: 24 },
@@ -127,6 +149,14 @@ function filterDevices(devices, state) {
 
       return false;
     } else if (isFullDayWork) {
+      if (!checkAllowSetForPower(0, 14, device.power, state.allowPower)) {
+        throw Error(
+          `Устройстве с id: ${
+            device.id
+          } не возможно включить в расписание так как не хватает допустимой мощности`
+        );
+      }
+
       setInSchedule({
         device,
         time: { from: 0, to: 14 },
@@ -135,20 +165,40 @@ function filterDevices(devices, state) {
 
       return false;
     } else if (isFullNightWork) {
+      if (!checkAllowSetForPower(14, 24, device.power, state.allowPower)) {
+        throw Error(
+          `Устройстве с id: ${
+            device.id
+          } не возможно включить в расписание так как не хватает допустимой мощности`
+        );
+      }
+
       setInSchedule({
         device,
         time: { from: 14, to: 24 },
         state,
       });
-      /* 	      } else {
-	        console.warn('Not correct device mode');
-	      } */
 
       return false;
     } else {
       return true;
     }
   });
+}
+
+/*
+  Функция проверяющая возможность установки устройства в данный период по мощности
+*/
+function checkAllowSetForPower(from, to, setPower, allowPower) {
+  let isAllowSet = true;
+
+  for (let i = from; i < to; i++) {
+    if (allowPower[i] < setPower) {
+      isAllowSet = false;
+    }
+  }
+
+  return isAllowSet;
 }
 
 /*
@@ -222,29 +272,22 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
         position = optimalPositions[i];
       }
 
-      let isAllow = true;
+      let isAllowSetDevice = true;
 
       if (isLargeDuration) {
-        for (let time = 0; time < position.from; time++) {
-          if (state.allowPower[time] < device.power) {
-            isAllow = false;
-          }
+        if (!checkAllowSetForPower(0, position.from, device.power, state.allowPower)) {
+          isAllowSetDevice = false;
         }
-
-        for (let time = position.to; time < 24; time++) {
-          if (state.allowPower[time] < device.power) {
-            isAllow = false;
-          }
+        if (!checkAllowSetForPower(position.to, 24, device.power, state.allowPower)) {
+          isAllowSetDevice = false;
         }
       } else {
-        for (let time = position.from; time < position.to; time++) {
-          if (state.allowPower[time] < device.power) {
-            isAllow = false;
-          }
+        if (!checkAllowSetForPower(position.from, position.to, device.power, state.allowPower)) {
+          isAllowSetDevice = false;
         }
       }
 
-      if (isAllow) {
+      if (isAllowSetDevice) {
         deviceIsSet = true;
         if (isLargeDuration) {
           setInSchedule({
@@ -293,11 +336,11 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
   Функция поиска возможности замены устройств местами, если какое-то устройство
   не может быть установлено, без сметы времени других устройств.
 */
-function findSwitchOption(device, hashOptimalCosts, state) {
+function findSwitchOption(notSetDevice, hashOptimalCosts, state) {
   // находим часы в которые не укладывается устройство
   let targetHour = [];
   state.allowPower.forEach((power, i) => {
-    if (power < device.power) {
+    if (power < notSetDevice.power) {
       targetHour.push(i);
     }
   });
@@ -311,8 +354,17 @@ function findSwitchOption(device, hashOptimalCosts, state) {
       const isInfinityWork = device.duration === 24;
       const isFullDayWork = device.mode === 'day' && device.duration === 14;
       const isFullNightWork = device.mode === 'night' && device.duration === 10;
+      const isSufficientPower = state.allowPower + device.power > notSetDevice.power;
 
-      if (!(isInfinityWork || isFullNightWork || isFullDayWork || device.id in targetDevices)) {
+      if (
+        !(
+          isInfinityWork ||
+          isFullNightWork ||
+          isFullDayWork ||
+          device.id in targetDevices ||
+          isSufficientPower
+        )
+      ) {
         targetDevices[device.id] = device;
         targetDevices[device.id].hour = hour;
         targetDevices.array.push(device);
@@ -324,7 +376,12 @@ function findSwitchOption(device, hashOptimalCosts, state) {
 
   let findSwipe = false;
   for (let i = 0; i < targetDevices.array.length; i++) {
-    findSwipe = checkSwipeOpportunity(targetDevices.array[i], device, hashOptimalCosts, state);
+    findSwipe = checkSwipeOpportunity(
+      targetDevices.array[i],
+      notSetDevice,
+      hashOptimalCosts,
+      state
+    );
     if (findSwipe) break;
   }
 
@@ -419,4 +476,5 @@ module.exports = {
   getScheduleDevices,
   removeDeviceFromSchedule,
   removeDeviceFromPowerArray,
+  checkAllowSetForPower,
 };
