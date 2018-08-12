@@ -1,0 +1,23 @@
+{
+  "devices": [
+    {
+      "id": "02DDD23A85DADDD71198305330CC386D",
+      "name": "Холодильник",
+      "power": 50,
+      "duration": 24
+    },
+    {
+      "id": "1E6276CC231716FE8EE8BC908486D41E",
+      "name": "Термостат",
+      "power": 50,
+      "duration": 24
+    },
+    {
+      "id": "7D9DC84AD110500D284B33C82FE6E85E",
+      "name": "Кондиционер",
+      "power": 850,
+      "duration": 1
+    }
+  ],
+  "ranges": [{ "from": 0, "to": 24 }, { "from": 0, "to": 24 }, { "from": 15, "to": 16 }]
+}
