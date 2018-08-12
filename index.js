@@ -155,9 +155,9 @@ function getOptimalTimeHash(devices, ratesAmount) {
   const hashCosts = [];
   devices.forEach(device => {
     let duration = device.duration;
-    if (duration > 12) {
-      duration = 24 - 12;
-    }
+    // if (duration > 12) {
+    //   duration = 24 - 12;
+    // }
 
     if (hashCosts[duration] == null) {
       let countIterations = ratesAmount.length - duration - 1;
@@ -180,7 +180,7 @@ function getOptimalTimeHash(devices, ratesAmount) {
   return hashCosts;
 }
 
-function setDevices(devices, hashOptimalCosts, state) {
+function setDevices(devices, hashOptimalCosts, state, stop = false) {
   devices.forEach(device => {
     let optimalPositions = hashOptimalCosts[device.duration];
 
@@ -202,16 +202,19 @@ function setDevices(devices, hashOptimalCosts, state) {
 
     for (let i = 0; i < optimalPositions.length; i++) {
       const position = optimalPositions[i];
+      // if (stop) console.log(position, device)
 
       // добавить чтение мода на приборов
       let isAllow = true;
 
       for (let time = position.from; time < position.to; time++) {
+        // if (stop) console.log(state.allowPower[time], device.power)
         if (state.allowPower[time] < device.power) {
           isAllow = false;
         }
       }
 
+      if (stop) console.log(device, isAllow);
       if (isAllow) {
         deviceIsSet = true;
         setInSchedule({
@@ -224,8 +227,10 @@ function setDevices(devices, hashOptimalCosts, state) {
       }
     }
 
-    if (deviceIsSet) {
-      // findSwitchOption();
+    // console.log(device, state.allowPower)
+
+    if (!deviceIsSet && !stop) {
+      findSwitchOption(device, hashOptimalCosts, state);
     }
   });
 }
@@ -240,15 +245,49 @@ function setDevices(devices, hashOptimalCosts, state) {
   }
 */
 
-function findSwitchOption(device, state) {
+function findSwitchOption(device, hashOptimalCosts, state) {
   // определяем можно ли переставить
   // находим часы в которые не укладывается устройство
-  // let targetHour = [];
-  // state.allowPower.forEach((power, i) => {
-  //   if (power < device.power) {
-  //     targetHour.push(i);
-  //   }
-  // })
+  let targetHour = [];
+  state.allowPower.forEach((power, i) => {
+    if (power < device.power) {
+      targetHour.push(i);
+    }
+  });
+
+  let targetDevices = {
+    array: [],
+  };
+  targetHour.forEach(hour => {
+    state.schedule[hour].forEach(device => {
+      const isInfinityWork = device.duration === 24;
+      const isFullDayWork = device.mode === 'day' && device.duration === 14;
+      const isFullNightWork = device.mode === 'night' && device.duration === 10;
+      if (!(isInfinityWork || isFullNightWork || isFullDayWork || device.id in targetDevices)) {
+        targetDevices[device.id] = device;
+        targetDevices[device.id].hour = hour;
+        targetDevices.array.push(device);
+      }
+    });
+  });
+
+  targetDevices.array.sort((a, b) => a.power - b.power);
+
+  Object.keys(state.schedule).forEach(hour => {
+    state.schedule[hour] = state.schedule[hour].filter(id => id !== targetDevices.array[0].id);
+  });
+
+  for (
+    let hour = targetDevices.array[0].hour;
+    hour < targetDevices.array[0].hour + targetDevices.array[0].duration;
+    hour++
+  ) {
+    state.allowPower[hour] += targetDevices.array[0].power;
+  }
+
+  // console.log(targetDevices.array[0], device);
+  setDevices([device, targetDevices.array[0]], hashOptimalCosts, state, true);
+  return targetDevices.array;
   // Стоит смотреть часы только те, в которые не влезает device
   // сравниваем по занимаем мощности (allowPower - itemPoser) > device.poWer и есть ли место для этого элемента в системе так же это нужно учитывать с учетом элемента который ты хочешь поставить в замен
   // переставить  на ближнюю оптимальную позицию с учетом его максимальной мощности: tate.allowPower[state.getTime(time)] - поправка < device.power
@@ -265,4 +304,5 @@ module.exports = {
   createResultObject,
   getOptimalTimeHash,
   setDevices,
+  findSwitchOption,
 };
