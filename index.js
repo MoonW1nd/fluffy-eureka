@@ -1,34 +1,30 @@
 function getScheduleDevices(data) {
   const { maxPower } = data;
-  const devices = data.devices.slice(); // копируем для защиты от мутации
-  const rates = data.rates.slice(); // копируем для защиты от мутации
-  const timeShift = 7; // сдвигаем массив на начало дневного периода
+  const devices = data.devices.slice();
+  const rates = data.rates.slice();
+  const timeShift = 7;
   const state = {
     getTime: getCorrectTime(7),
     schedule: createResultObject().schedule,
     allowPower: Array(24).fill(data.maxPower),
   };
 
-  /*
-    Составляем таблицу оптимальных периодов для работы приборов
-    с разной продолжительностью
-  */
-  const resultObject = createResultObject();
   const ratesArray = getRateArray(rates, timeShift);
   const ratesAmount = getRatesAmount(ratesArray);
   let notSetDevices = filterDevices(devices, state);
   const hashOptimalCosts = getOptimalTimeHash(notSetDevices, ratesAmount);
 
-  /*
-    сортируем по мощности так как приборы с большой потребляемой мощностью следует
-    установить в самые выгодные позиции
-  */
   notSetDevices.sort((a, b) => b.power - a.power);
+
+  setDevices(notSetDevices, hashOptimalCosts, state);
+  return fillResultObject(state, devices, ratesArray);
 }
 
 /*
   Вспомогательные функции
 */
+
+// Создает каркас объекта для заполнения при выводе
 function createResultObject() {
   const resultObject = {
     schedule: {},
@@ -45,6 +41,10 @@ function createResultObject() {
   return resultObject;
 }
 
+/*
+  Переводи значения в периодах из rates в массив из 24 значений
+  для более удобной работы
+ */
 function getRateArray(rateRanges, timeShift) {
   const rates = [];
   rateRanges.forEach(range => {
@@ -64,6 +64,10 @@ function getRateArray(rateRanges, timeShift) {
   return rates;
 }
 
+/*
+  Считает сумму всех всех значений тарифов по часам и сохраняет ее
+  для удобного определения тарифа на периоде, rateOnPeriod = ratesAmount[time.from] - ratesAmount[time.to]
+*/
 function getRatesAmount(rates) {
   const amount = [];
 
@@ -80,6 +84,9 @@ function getRatesAmount(rates) {
   return amount;
 }
 
+/*
+  Функция для перевода смещенного времени к начальному состоянию
+*/
 function getCorrectTime(timeShift) {
   return time => {
     let resultTime = time + timeShift;
@@ -90,16 +97,9 @@ function getCorrectTime(timeShift) {
   };
 }
 
-function getShiftTime(unShiftTime) {
-  return time => {
-    let resultTime = time - unShiftTime;
-    if (resultTime < 0) {
-      resultTime = 24 - resultTime;
-    }
-    return resultTime;
-  };
-}
-
+/*
+  Функция установки устройства в расписание, и уменьшения доступной мощности на периоде
+*/
 function setInSchedule(option) {
   const { device, time, state } = option;
   for (let hour = time.from; hour < time.to; hour++) {
@@ -110,8 +110,8 @@ function setInSchedule(option) {
 }
 
 /*
-	Раскидаем устройства которые работают круглосуточно или 12 часов
-  с одним из режимов
+  Функция которая сразу устанавливает устройства которые должны работать полный период.
+  То есть для них не нужно искать оптимального времени.
 */
 function filterDevices(devices, state) {
   return devices.filter(device => {
@@ -151,6 +151,11 @@ function filterDevices(devices, state) {
   });
 }
 
+/*
+  Ищет и кеширует варианты установки для всех устройств, в периоде.
+  Кэширование происходит по продолжительности работы, так как для устройств с одинаковой
+  продолжительностью работы будут одинаковые варианты расстановки.
+*/
 function getOptimalTimeHash(devices, ratesAmount) {
   const hashCosts = [];
   devices.forEach(device => {
@@ -180,6 +185,10 @@ function getOptimalTimeHash(devices, ratesAmount) {
   return hashCosts;
 }
 
+/*
+  Функция установки устройства в оптимальное положение,
+  так же может использоваться для проверки возможности установки приборов (checkMode).
+*/
 function setDevices(devices, hashOptimalCosts, state, options = { checkMode: false }) {
   let allDevicesSet = true;
 
@@ -204,7 +213,7 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
 
     for (let i = 0; i < optimalPositions.length; i++) {
       const position = optimalPositions[i];
-      // добавить чтение мода на приборов
+
       let isAllow = true;
 
       for (let time = position.from; time < position.to; time++) {
@@ -244,8 +253,11 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
   }
 }
 
+/*
+  Функция поиска возможности замены устройств местами, если какое-то устройство
+  не может быть установлено, без сметы времени других устройств.
+*/
 function findSwitchOption(device, hashOptimalCosts, state) {
-  // определяем можно ли переставить
   // находим часы в которые не укладывается устройство
   let targetHour = [];
   state.allowPower.forEach((power, i) => {
@@ -254,6 +266,7 @@ function findSwitchOption(device, hashOptimalCosts, state) {
     }
   });
 
+  // находим устройства которые можно подвинуть
   let targetDevices = {
     array: [],
   };
@@ -262,6 +275,7 @@ function findSwitchOption(device, hashOptimalCosts, state) {
       const isInfinityWork = device.duration === 24;
       const isFullDayWork = device.mode === 'day' && device.duration === 14;
       const isFullNightWork = device.mode === 'night' && device.duration === 10;
+
       if (!(isInfinityWork || isFullNightWork || isFullDayWork || device.id in targetDevices)) {
         targetDevices[device.id] = device;
         targetDevices[device.id].hour = hour;
@@ -285,6 +299,9 @@ function findSwitchOption(device, hashOptimalCosts, state) {
   }
 }
 
+/*
+  Функция проверяет можно ли поменять 2 устройства местами, и если можно, то это происходит, и возвращается true;
+*/
 function checkSwipeOpportunity(device, setDevice, hashOptimalCosts, state) {
   let allowPower = removeDeviceFromPowerArray(device, state.allowPower);
   let schedule = removeDeviceFromSchedule(device, state.schedule);
@@ -300,6 +317,9 @@ function checkSwipeOpportunity(device, setDevice, hashOptimalCosts, state) {
   );
 }
 
+/*
+  Функция которая удаляет определенное устройство из расписания
+*/
 function removeDeviceFromSchedule(device, schedule) {
   let newSchedule = {};
   Object.keys(schedule).forEach(key => {
@@ -310,6 +330,9 @@ function removeDeviceFromSchedule(device, schedule) {
   return newSchedule;
 }
 
+/*
+  Функция которая возвращает занятую устройством мощность обратно в массив доступной мощности
+*/
 function removeDeviceFromPowerArray(device, allowPower) {
   let newAllowPower = allowPower.slice();
   for (let hour = device.hour; hour < device.hour + device.duration; hour++) {
@@ -317,6 +340,33 @@ function removeDeviceFromPowerArray(device, allowPower) {
   }
 
   return newAllowPower;
+}
+
+/*
+  Функция формирующая результат .
+*/
+function fillResultObject(state, devices, ratesArray) {
+  const resultObject = createResultObject();
+
+  devices.forEach(device => {
+    resultObject.consumedEnergy.devices[device.id] = 0;
+  });
+
+  ratesArray.forEach((rate, hour) => {
+    state.schedule[hour].forEach(device => {
+      resultObject.schedule[state.getTime(hour)].push(device.id);
+
+      resultObject.consumedEnergy.value += (ratesArray[hour] * device.power) / 1000;
+      resultObject.consumedEnergy.value = Number(resultObject.consumedEnergy.value.toFixed(4));
+
+      resultObject.consumedEnergy.devices[device.id] += (ratesArray[hour] * device.power) / 1000;
+      resultObject.consumedEnergy.devices[device.id] = Number(
+        resultObject.consumedEnergy.devices[device.id].toFixed(4)
+      );
+    });
+  });
+
+  return resultObject;
 }
 
 module.exports = {
@@ -329,4 +379,8 @@ module.exports = {
   getOptimalTimeHash,
   setDevices,
   findSwitchOption,
+  fillResultObject,
+  getScheduleDevices,
+  removeDeviceFromSchedule,
+  removeDeviceFromPowerArray,
 };
