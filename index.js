@@ -5,7 +5,7 @@ function getScheduleDevices(data) {
   const timeShift = 7; // сдвигаем массив на начало дневного периода
   const state = {
     getTime: getCorrectTime(7),
-    resultObject: createResultObject(),
+    schedule: createResultObject().schedule,
     allowPower: Array(24).fill(data.maxPower),
   };
 
@@ -13,6 +13,7 @@ function getScheduleDevices(data) {
     Составляем таблицу оптимальных периодов для работы приборов
     с разной продолжительностью
   */
+  const resultObject = createResultObject();
   const ratesArray = getRateArray(rates, timeShift);
   const ratesAmount = getRatesAmount(ratesArray);
   let notSetDevices = filterDevices(devices, state);
@@ -89,11 +90,21 @@ function getCorrectTime(timeShift) {
   };
 }
 
+function getShiftTime(unShiftTime) {
+  return time => {
+    let resultTime = time - unShiftTime;
+    if (resultTime < 0) {
+      resultTime = 24 - resultTime;
+    }
+    return resultTime;
+  };
+}
+
 function setInSchedule(option) {
   const { device, time, state } = option;
   for (let hour = time.from; hour < time.to; hour++) {
-    const index = state.getTime(hour);
-    state.resultObject.schedule[index].push(device.id);
+    const index = hour;
+    state.schedule[index].push(device);
     state.allowPower[index] -= device.power;
   }
 }
@@ -187,6 +198,8 @@ function setDevices(devices, hashOptimalCosts, state) {
       }
     });
 
+    let deviceIsSet = false;
+
     for (let i = 0; i < optimalPositions.length; i++) {
       const position = optimalPositions[i];
 
@@ -194,11 +207,13 @@ function setDevices(devices, hashOptimalCosts, state) {
       let isAllow = true;
 
       for (let time = position.from; time < position.to; time++) {
-        if (state.allowPower[state.getTime(time)] < device.power) {
+        if (state.allowPower[time] < device.power) {
           isAllow = false;
         }
       }
+
       if (isAllow) {
+        deviceIsSet = true;
         setInSchedule({
           device,
           time: { from: position.from, to: position.to },
@@ -208,7 +223,37 @@ function setDevices(devices, hashOptimalCosts, state) {
         break;
       }
     }
+
+    if (deviceIsSet) {
+      // findSwitchOption();
+    }
   });
+}
+
+/*
+  Какая нужна структура алгоритма?
+  schedule {
+    0: [{
+      id,
+      power,
+    }]
+  }
+*/
+
+function findSwitchOption(device, state) {
+  // определяем можно ли переставить
+  // находим часы в которые не укладывается устройство
+  // let targetHour = [];
+  // state.allowPower.forEach((power, i) => {
+  //   if (power < device.power) {
+  //     targetHour.push(i);
+  //   }
+  // })
+  // Стоит смотреть часы только те, в которые не влезает device
+  // сравниваем по занимаем мощности (allowPower - itemPoser) > device.poWer и есть ли место для этого элемента в системе так же это нужно учитывать с учетом элемента который ты хочешь поставить в замен
+  // переставить  на ближнюю оптимальную позицию с учетом его максимальной мощности: tate.allowPower[state.getTime(time)] - поправка < device.power
+  // если возможно то удаляем прибор ото всюду из расписания и заново вызываем функцию setDevices с этими 2-мя приборами
+  // если не возможно переместить - кидаем ошибку
 }
 
 module.exports = {

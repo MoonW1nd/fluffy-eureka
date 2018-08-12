@@ -4,7 +4,7 @@ const data = require('./data/input');
 describe('filterDevices', () => {
   const state = {
     getTime: getCorrectTime(7),
-    resultObject: createResultObject(),
+    schedule: createResultObject().schedule,
     allowPower: Array(24).fill(2100),
   };
   const device = data.devices.slice();

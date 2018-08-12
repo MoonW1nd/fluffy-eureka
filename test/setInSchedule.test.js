@@ -3,12 +3,12 @@ const { setInSchedule, createResultObject, getCorrectTime } = require('../index'
 describe('getCorrectTime', () => {
   const state = {
     getTime: getCorrectTime(7),
-    resultObject: createResultObject(),
+    schedule: createResultObject().schedule,
     allowPower: Array(24).fill(2100),
   };
 
   test('correct Value', () => {
-    const expectedSchedule = {
+    const expectedScheduleId = {
       '0': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '1': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '2': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
@@ -24,18 +24,18 @@ describe('getCorrectTime', () => {
       '12': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '13': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '14': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
-      '15': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
+      '15': [
+        '02DDD23A85DADDD71198305330CC386D',
+        '1E6276CC231716FE8EE8BC908486D41E',
+        '7D9DC84AD110500D284B33C82FE6E85E',
+      ],
       '16': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '17': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '18': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '19': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '20': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '21': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
-      '22': [
-        '02DDD23A85DADDD71198305330CC386D',
-        '1E6276CC231716FE8EE8BC908486D41E',
-        '7D9DC84AD110500D284B33C82FE6E85E',
-      ],
+      '22': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
       '23': ['02DDD23A85DADDD71198305330CC386D', '1E6276CC231716FE8EE8BC908486D41E'],
     };
 
@@ -72,9 +72,9 @@ describe('getCorrectTime', () => {
       state,
     });
 
-    Object.keys(expectedSchedule).forEach(key => {
-      expectedSchedule[key].forEach((id, i) => {
-        expect(state.resultObject.schedule[key][i] === id).toBe(true);
+    Object.keys(expectedScheduleId).forEach(key => {
+      expectedScheduleId[key].forEach((id, i) => {
+        expect(state.schedule[key][i].id === id).toBe(true);
       });
     });
   });
