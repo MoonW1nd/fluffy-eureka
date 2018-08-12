@@ -75,9 +75,9 @@ describe('getCorrectTime', () => {
 
   test('find correct schedule simple variation', () => {
     Object.keys(resultSchedule).forEach(hour => {
-      expect(state.schedule[hour].length === resultSchedule[hour]);
+      expect(state.schedule[hour].length === resultSchedule[hour].length).toBe(true);
       state.schedule[hour].forEach(device => {
-        expect(resultSchedule[hour].includes(device.id));
+        expect(resultSchedule[hour].includes(device.id)).toBe(true);
       });
     });
   });

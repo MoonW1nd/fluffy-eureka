@@ -180,7 +180,9 @@ function getOptimalTimeHash(devices, ratesAmount) {
   return hashCosts;
 }
 
-function setDevices(devices, hashOptimalCosts, state, stop = false) {
+function setDevices(devices, hashOptimalCosts, state, options = { checkMode: false }) {
+  let allDevicesSet = true;
+
   devices.forEach(device => {
     let optimalPositions = hashOptimalCosts[device.duration];
 
@@ -202,19 +204,15 @@ function setDevices(devices, hashOptimalCosts, state, stop = false) {
 
     for (let i = 0; i < optimalPositions.length; i++) {
       const position = optimalPositions[i];
-      // if (stop) console.log(position, device)
-
       // добавить чтение мода на приборов
       let isAllow = true;
 
       for (let time = position.from; time < position.to; time++) {
-        // if (stop) console.log(state.allowPower[time], device.power)
         if (state.allowPower[time] < device.power) {
           isAllow = false;
         }
       }
 
-      if (stop) console.log(device, isAllow);
       if (isAllow) {
         deviceIsSet = true;
         setInSchedule({
@@ -227,23 +225,24 @@ function setDevices(devices, hashOptimalCosts, state, stop = false) {
       }
     }
 
-    // console.log(device, state.allowPower)
+    if (!deviceIsSet) {
+      allDevicesSet = false;
+    }
 
-    if (!deviceIsSet && !stop) {
+    if (!deviceIsSet && !options.checkMode) {
       findSwitchOption(device, hashOptimalCosts, state);
     }
   });
-}
 
-/*
-  Какая нужна структура алгоритма?
-  schedule {
-    0: [{
-      id,
-      power,
-    }]
+  if (options.checkMode) {
+    if (allDevicesSet) {
+      options.globalState.schedule = state.schedule;
+      options.globalState.allowPower = state.allowPower;
+    }
+
+    return allDevicesSet;
   }
-*/
+}
 
 function findSwitchOption(device, hashOptimalCosts, state) {
   // определяем можно ли переставить
@@ -273,26 +272,51 @@ function findSwitchOption(device, hashOptimalCosts, state) {
 
   targetDevices.array.sort((a, b) => a.power - b.power);
 
-  Object.keys(state.schedule).forEach(hour => {
-    state.schedule[hour] = state.schedule[hour].filter(id => id !== targetDevices.array[0].id);
-  });
-
-  for (
-    let hour = targetDevices.array[0].hour;
-    hour < targetDevices.array[0].hour + targetDevices.array[0].duration;
-    hour++
-  ) {
-    state.allowPower[hour] += targetDevices.array[0].power;
+  let findSwipe = false;
+  for (let i = 0; i < targetDevices.array.length; i++) {
+    findSwipe = checkSwipeOpportunity(targetDevices.array[i], device, hashOptimalCosts, state);
+    if (findSwipe) break;
   }
 
-  // console.log(targetDevices.array[0], device);
-  setDevices([device, targetDevices.array[0]], hashOptimalCosts, state, true);
-  return targetDevices.array;
-  // Стоит смотреть часы только те, в которые не влезает device
-  // сравниваем по занимаем мощности (allowPower - itemPoser) > device.poWer и есть ли место для этого элемента в системе так же это нужно учитывать с учетом элемента который ты хочешь поставить в замен
-  // переставить  на ближнюю оптимальную позицию с учетом его максимальной мощности: tate.allowPower[state.getTime(time)] - поправка < device.power
-  // если возможно то удаляем прибор ото всюду из расписания и заново вызываем функцию setDevices с этими 2-мя приборами
-  // если не возможно переместить - кидаем ошибку
+  if (!findSwipe) {
+    throw Error(
+      'Нет возможности установить работу всех приборов с заданной максимальной мощностью.'
+    );
+  }
+}
+
+function checkSwipeOpportunity(device, setDevice, hashOptimalCosts, state) {
+  let allowPower = removeDeviceFromPowerArray(device, state.allowPower);
+  let schedule = removeDeviceFromSchedule(device, state.schedule);
+
+  return setDevices(
+    [setDevice, device],
+    hashOptimalCosts,
+    {
+      allowPower,
+      schedule,
+    },
+    { checkMode: true, globalState: state }
+  );
+}
+
+function removeDeviceFromSchedule(device, schedule) {
+  let newSchedule = {};
+  Object.keys(schedule).forEach(key => {
+    newSchedule[key] = schedule[key].slice();
+    newSchedule[key] = schedule[key].filter(id => id !== device.id);
+  });
+
+  return newSchedule;
+}
+
+function removeDeviceFromPowerArray(device, allowPower) {
+  let newAllowPower = allowPower.slice();
+  for (let hour = device.hour; hour < device.hour + device.duration; hour++) {
+    newAllowPower[hour] += device.power;
+  }
+
+  return newAllowPower;
 }
 
 module.exports = {
