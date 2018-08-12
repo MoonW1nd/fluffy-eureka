@@ -160,9 +160,9 @@ function getOptimalTimeHash(devices, ratesAmount) {
   const hashCosts = [];
   devices.forEach(device => {
     let duration = device.duration;
-    // if (duration > 12) {
-    //   duration = 24 - 12;
-    // }
+    if (duration > 12) {
+      duration = 24 - duration;
+    }
 
     if (hashCosts[duration] == null) {
       let countIterations = ratesAmount.length - duration - 1;
@@ -193,7 +193,10 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
   let allDevicesSet = true;
 
   devices.forEach(device => {
-    let optimalPositions = hashOptimalCosts[device.duration];
+    let { duration } = device;
+    const isLargeDuration = device.duration > 12;
+    if (isLargeDuration) duration = 24 - duration;
+    let optimalPositions = hashOptimalCosts[duration];
 
     if (device.mode == 'day') {
       optimalPositions = optimalPositions.slice(0, 15 - device.duration);
@@ -212,23 +215,56 @@ function setDevices(devices, hashOptimalCosts, state, options = { checkMode: fal
     let deviceIsSet = false;
 
     for (let i = 0; i < optimalPositions.length; i++) {
-      const position = optimalPositions[i];
+      let position;
+      if (isLargeDuration) {
+        position = optimalPositions[optimalPositions.length - i - 1];
+      } else {
+        position = optimalPositions[i];
+      }
 
       let isAllow = true;
 
-      for (let time = position.from; time < position.to; time++) {
-        if (state.allowPower[time] < device.power) {
-          isAllow = false;
+      if (isLargeDuration) {
+        for (let time = 0; time < position.from; time++) {
+          if (state.allowPower[time] < device.power) {
+            isAllow = false;
+          }
+        }
+
+        for (let time = position.to; time < 24; time++) {
+          if (state.allowPower[time] < device.power) {
+            isAllow = false;
+          }
+        }
+      } else {
+        for (let time = position.from; time < position.to; time++) {
+          if (state.allowPower[time] < device.power) {
+            isAllow = false;
+          }
         }
       }
 
       if (isAllow) {
         deviceIsSet = true;
-        setInSchedule({
-          device,
-          time: { from: position.from, to: position.to },
-          state,
-        });
+        if (isLargeDuration) {
+          setInSchedule({
+            device,
+            time: { from: 0, to: position.from },
+            state,
+          });
+
+          setInSchedule({
+            device,
+            time: { from: position.to, to: 24 },
+            state,
+          });
+        } else {
+          setInSchedule({
+            device,
+            time: { from: position.from, to: position.to },
+            state,
+          });
+        }
 
         break;
       }
