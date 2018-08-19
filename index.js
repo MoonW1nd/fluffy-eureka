@@ -1,5 +1,13 @@
 function getScheduleDevices(data) {
+  if (Object(data) !== data)
+    throw Error(
+      'Некорректный тип входных данных, входные данные должны передаваться в виде объекта JS'
+    );
   const { maxPower } = data;
+  if (typeof maxPower !== 'number' || Number.isNaN(maxPower))
+    throw Error('Не корректный тип значения maxPower');
+  if (!Array.isArray(data.devices)) throw Error('Не корректный тип значения devices');
+  if (!Array.isArray(data.rates)) throw Error('Не корректный тип значения rates');
   const devices = data.devices.slice();
   const rates = data.rates.slice();
   const timeShift = 7;
@@ -42,13 +50,22 @@ function createResultObject() {
 }
 
 /*
-  Переводи значения в периодах из rates в массив из 24 значений
+  Переводит значения в периодах из rates в массив из 24 значений
   для более удобной работы
  */
 function getRateArray(rateRanges, timeShift) {
   const rates = [];
   let sum = 0;
-  rateRanges.forEach(range => {
+  rateRanges.forEach((range, index) => {
+    // проверка типов в ranges
+    if (Object(range) !== range) throw Error(`Не корректный тип значения rates[${index}]`);
+    if (typeof range.from !== 'number' || Number.isNaN(range.from))
+      throw Error(`Не корректный тип значения rates[${index}]from`);
+    if (typeof range.to !== 'number' || Number.isNaN(range.to))
+      throw Error(`Не корректный тип значения rates[${index}]to`);
+    if (typeof range.value !== 'number' || Number.isNaN(range.value))
+      throw Error(`Не корректный тип значения rates[${index}]value`);
+
     if (range.from > range.to) {
       sum += 24 - range.from;
       sum += range.to;
@@ -123,14 +140,41 @@ function setInSchedule(option) {
   То есть для них не нужно искать оптимального времени.
 */
 function filterDevices(devices, state) {
-  return devices.filter(device => {
-    const isInfinityWork = device.duration === 24;
-    const isFullDayWork = device.mode === 'day' && device.duration === 14;
-    const isFullNightWork = device.mode === 'night' && device.duration === 10;
+  return devices.filter((device, index) => {
+    // проверка типов и условий поля devices
+    if (Object(device) !== device) throw Error(`Не корректный тип значения device[${index}]`);
+    if (typeof device.power !== 'number' || Number.isNaN(device.power))
+      throw Error(`Не корректный тип значения device[${index}]from`);
+    if (typeof device.duration !== 'number' || Number.isNaN(device.duration))
+      throw Error(`Не корректный тип значения device[${index}]duration`);
+    if (typeof device.name !== 'string')
+      throw Error(`Не корректный тип значения device[${index}]name`);
+    if (typeof device.id !== 'string') throw Error(`Не корректный тип значения device[${index}]id`);
+
+    if (device.duration > 24) {
+      throw Error(
+        `В устройстве с id: ${
+          device.id
+        } не корректно задана продолжительность работы, она не может быть больше 24 часов в сутки`
+      );
+    }
 
     if (device.mode != null && !['day', 'night'].includes(device.mode)) {
       throw Error(`В устройстве с id: ${device.id} не корректно задан мод`);
     }
+
+    if (
+      (device.mod === 'day' && device.duration > 14) ||
+      (device.mode === 'night' && device.duration > 10)
+    ) {
+      throw Error(
+        `В устройстве с id: ${device.id} продолжительность работы больше чем позволяет мод`
+      );
+    }
+
+    const isInfinityWork = device.duration === 24;
+    const isFullDayWork = device.mode === 'day' && device.duration === 14;
+    const isFullNightWork = device.mode === 'night' && device.duration === 10;
 
     if (isInfinityWork) {
       if (!checkAllowSetForPower(0, 24, device.power, state.allowPower)) {
