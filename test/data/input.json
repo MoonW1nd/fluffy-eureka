@@ -1,64 +1,262 @@
 {
-  "devices": [
+  "correctData": [
     {
-      "id": "F972B82BA56A70CC579945773B6866FB",
-      "name": "Посудомоечная машина",
-      "power": 950,
-      "duration": 3,
-      "mode": "night"
-    },
-    {
-      "id": "C515D887EDBBE669B2FDAC62F571E9E9",
-      "name": "Духовка",
-      "power": 2000,
-      "duration": 2,
-      "mode": "day"
-    },
-    {
-      "id": "02DDD23A85DADDD71198305330CC386D",
-      "name": "Холодильник",
-      "power": 50,
-      "duration": 24
-    },
-    {
-      "id": "1E6276CC231716FE8EE8BC908486D41E",
-      "name": "Термостат",
-      "power": 50,
-      "duration": 24
-    },
-    {
-      "id": "7D9DC84AD110500D284B33C82FE6E85E",
-      "name": "Кондиционер",
-      "power": 850,
-      "duration": 1
+      "devices": [
+        {
+          "id": "F972B82BA56A70CC579945773B6866FB",
+          "name": "Посудомоечная машина",
+          "power": 950,
+          "duration": 3,
+          "mode": "night"
+        },
+        {
+          "id": "C515D887EDBBE669B2FDAC62F571E9E9",
+          "name": "Духовка",
+          "power": 2000,
+          "duration": 2,
+          "mode": "day"
+        },
+        {
+          "id": "02DDD23A85DADDD71198305330CC386D",
+          "name": "Холодильник",
+          "power": 50,
+          "duration": 24
+        },
+        {
+          "id": "1E6276CC231716FE8EE8BC908486D41E",
+          "name": "Термостат",
+          "power": 50,
+          "duration": 24
+        },
+        {
+          "id": "7D9DC84AD110500D284B33C82FE6E85E",
+          "name": "Кондиционер",
+          "power": 850,
+          "duration": 1
+        }
+      ],
+      "rates": [
+        {
+          "from": 7,
+          "to": 10,
+          "value": 6.46
+        },
+        {
+          "from": 10,
+          "to": 17,
+          "value": 5.38
+        },
+        {
+          "from": 17,
+          "to": 21,
+          "value": 6.46
+        },
+        {
+          "from": 21,
+          "to": 23,
+          "value": 5.38
+        },
+        {
+          "from": 23,
+          "to": 7,
+          "value": 1.79
+        }
+      ],
+      "maxPower": 2100
     }
   ],
-  "rates": [
-    {
-      "from": 7,
-      "to": 10,
-      "value": 6.46
-    },
-    {
-      "from": 10,
-      "to": 17,
-      "value": 5.38
-    },
-    {
-      "from": 17,
-      "to": 21,
-      "value": 6.46
-    },
-    {
-      "from": 21,
-      "to": 23,
-      "value": 5.38
-    },
-    {
-      "from": 23,
-      "to": 7,
-      "value": 1.79
-    }
-  ],
-  "maxPower": 2100
+  "wrongData": [
+    [true, 1, false, "", "test", 0],
+    [
+      { "maxPower": true },
+      { "maxPower": false },
+      { "maxPower": "" },
+      { "maxPower": {} },
+      { "maxPower": [] }
+    ],
+    [
+      { "devices": true, "maxPower": 1 },
+      { "devices": false, "maxPower": 1 },
+      { "devices": "", "maxPower": 1 },
+      { "devices": {}, "maxPower": 1 },
+      { "devices": 1, "maxPower": 1 }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": 1 },
+      { "devices": [], "maxPower": 1, "rates": true },
+      { "devices": [], "maxPower": 1, "rates": false },
+      { "devices": [], "maxPower": 1, "rates": {} },
+      { "devices": [], "maxPower": 1, "rates": "test" }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": [1] },
+      { "devices": [], "maxPower": 1, "rates": [true] },
+      { "devices": [], "maxPower": 1, "rates": [false] },
+      { "devices": [], "maxPower": 1, "rates": [0] },
+      { "devices": [], "maxPower": 1, "rates": ["test"] }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": [{ "from": {} }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": [] }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": true }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": "" }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": "test" }] }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": {} }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": [] }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": true }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": "test" }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": false }] }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": [] }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": {} }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": true }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": false }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": "test" }] }
+    ],
+    [
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": 1 }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": 2 }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": 3 }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": 4 }] },
+      { "devices": [], "maxPower": 1, "rates": [{ "from": 1, "to": 2, "value": 5 }] }
+    ],
+    [
+      {
+        "devices": [true],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [false],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [""],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [2],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": ["test"],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": true }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": false }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": [] }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": {} }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": "test" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": true }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": false }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": [] }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": {} }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": "test" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": true }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": false }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": [] }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": {} }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": 100 }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": "test1", "id": true }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": "test2", "id": false }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": "test3", "id": [] }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": "test4", "id": {} }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 2, "name": "test5", "id": 100 }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ]
+  ]
 }
