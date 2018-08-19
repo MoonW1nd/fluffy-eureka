@@ -113,4 +113,34 @@ describe('getScheduleDevices Exceptions', () => {
       expect(() => getScheduleDevices(input)).toThrow(output.wrongData[13]);
     });
   });
+
+  test('device[i].duration > 24', () => {
+    input.wrongData[14].forEach(input => {
+      expect(() => getScheduleDevices(input)).toThrow(output.wrongData[14]);
+    });
+  });
+
+  test('device[i].mode not correct value', () => {
+    input.wrongData[15].forEach(input => {
+      expect(() => getScheduleDevices(input)).toThrow(output.wrongData[15]);
+    });
+  });
+
+  test('device[i].duration not correct with mode', () => {
+    input.wrongData[16].forEach(input => {
+      expect(() => getScheduleDevices(input)).toThrow(output.wrongData[16]);
+    });
+  });
+
+  test('Low power limit', () => {
+    input.wrongData[17].forEach(input => {
+      expect(() => getScheduleDevices(input)).toThrow(output.wrongData[17]);
+    });
+  });
+
+  test('Not set', () => {
+    input.wrongData[18].forEach(input => {
+      expect(() => getScheduleDevices(input)).toThrow(output.wrongData[18]);
+    });
+  });
 });

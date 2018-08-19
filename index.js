@@ -183,7 +183,7 @@ function filterDevices(devices, state) {
     }
 
     if (
-      (device.mod === 'day' && device.duration > 14) ||
+      (device.mode === 'day' && device.duration > 14) ||
       (device.mode === 'night' && device.duration > 10)
     ) {
       throw Error(

@@ -31,6 +31,20 @@
       "name": "Кондиционер",
       "power": 850,
       "duration": 1
+    },
+    {
+      "id": "7D9DC84AD110500D284B33C82FE6E85F",
+      "name": "Кондиционер",
+      "power": 850,
+      "duration": 14,
+      "mode": "day"
+    },
+    {
+      "id": "7D9DC84AD110500D284B33C82FE6E85D",
+      "name": "Кондиционер",
+      "power": 850,
+      "duration": 10,
+      "mode": "night"
     }
   ],
   "rates": [

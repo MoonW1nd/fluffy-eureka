@@ -257,6 +257,81 @@
         "maxPower": 1,
         "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
       }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 25, "name": "test1", "id": "test1" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": "test" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": true }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": {} }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": 10 }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 16, "name": "test1", "id": "test1", "mode": "day" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 11, "name": "test1", "id": "test1", "mode": "night" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 14, "name": "test1", "id": "test1", "mode": "day" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": "night" }],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 24, "name": "test1", "id": "test1"}],
+        "maxPower": 1,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
+    ],
+    [
+      {
+        "devices": [{ "power": 100, "duration": 10, "name": "test1", "id": "test1", "mode": "day" }],
+        "maxPower": 90,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 8, "name": "test1", "id": "test1", "mode": "night" }],
+        "maxPower": 90,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      },
+      {
+        "devices": [{ "power": 100, "duration": 21, "name": "test1", "id": "test1"}],
+        "maxPower": 90,
+        "rates": [{ "from": 7, "to": 21, "value": 2 }, { "from": 21, "to": 7, "value": 1 }]
+      }
     ]
   ]
 }
